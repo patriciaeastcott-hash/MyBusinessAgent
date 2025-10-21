@@ -41,6 +41,8 @@ from docx import Document as DocxDocument
 
 # Practical outputs
 import pandas as pd
+# 🟢 FIX: openpyxl is implicitly required by pandas.to_excel, but not directly imported. 
+# We need to ensure it's in the installation steps.
 
 # Accessibility audit
 from selenium import webdriver
@@ -59,19 +61,19 @@ DOCX_FILE = OUTPUT_DIR / f"{timestamp}_insights.docx"
 EXCEL_FILE = OUTPUT_DIR / f"{timestamp}_action_plan.xlsx"
 
 NEWS_SOURCES = [
-    "https://www.smartcompany.com.au/feed/",
-    "https://businessnewsaustralia.com/feed/",
-    "https://asic.gov.au/about-asic/media-centre/news-releases/media-releases-2025/feed/",
-    "https://ausbiz.com.au/feeds/rss",
-    "https://www.itnews.com.au/rss",
-    "https://www.crn.com.au/rss",
-    "https://www.themandarin.com.au/feed/",
-    "https://www.businessnewsaustralia.com/articles/rss/startup-daily",
-    "https://www.business.gov.au/news.rss",
-    "https://www.dynamicbusiness.com.au/feed",
-    "https://www.smartcompany.com.au/feed/",
-    "https://www.businessnewsaustralia.com/articles/rss/sme",
-    "https://www.asbfeo.gov.au/news/rss.xml"
+    "[https://www.smartcompany.com.au/feed/](https://www.smartcompany.com.au/feed/)",
+    "[https://businessnewsaustralia.com/feed/](https://businessnewsaustralia.com/feed/)",
+    "[https://asic.gov.au/about-asic/media-centre/news-releases/media-releases-2025/feed/](https://asic.gov.au/about-asic/media-centre/news-releases/media-releases-2025/feed/)",
+    "[https://ausbiz.com.au/feeds/rss](https://ausbiz.com.au/feeds/rss)",
+    "[https://www.itnews.com.au/rss](https://www.itnews.com.au/rss)",
+    "[https://www.crn.com.au/rss](https://www.crn.com.au/rss)",
+    "[https://www.themandarin.com.au/feed/](https://www.themandarin.com.au/feed/)",
+    "[https://www.businessnewsaustralia.com/articles/rss/startup-daily](https://www.businessnewsaustralia.com/articles/rss/startup-daily)",
+    "[https://www.business.gov.au/news.rss](https://www.business.gov.au/news.rss)",
+    "[https://www.dynamicbusiness.com.au/feed](https://www.dynamicbusiness.com.au/feed)",
+    "[https://www.smartcompany.com.au/feed/](https://www.smartcompany.com.au/feed/)",
+    "[https://www.businessnewsaustralia.com/articles/rss/sme](https://www.businessnewsaustralia.com/articles/rss/sme)",
+    "[https://www.asbfeo.gov.au/news/rss.xml](https://www.asbfeo.gov.au/news/rss.xml)"
 ]
 
 # Get Gemini API key from environment
@@ -231,7 +233,9 @@ Your task: Analyze THIS WEEK's specific news and identify:
 Respond with ONLY valid JSON that matches this exact structure:
 {json.dumps(json_schema, indent=2)}
 
-CRITICAL: Be specific and timely. Avoid generic advice. Reference actual news from this week. DO NOT include any text before or after the JSON. Just output the raw JSON."""
+CRITICAL: Be specific and timely. Avoid generic advice. Reference actual news from this week. 
+**RIGOROUSLY ENSURE all strings within the JSON are valid: escape all double quotes (\") and newlines (\n).**
+DO NOT include any text before or after the JSON. Just output the raw JSON.""" # 🟢 FIX: Added strict JSON prompt instruction
 
     # Define Safety Settings using the recommended moderate block threshold 
     # (BLOCK_NONE was causing the safety filter to reject the request, Finish Reason 2)
@@ -244,9 +248,10 @@ CRITICAL: Be specific and timely. Avoid generic advice. Reference actual news fr
     }
 
     # Create Generation Config 
+    # 🟢 FIX: Increased max_output_tokens to prevent truncation of the long summary string
     generation_config = genai.types.GenerationConfig(
         temperature=0.7,
-        max_output_tokens=2000,
+        max_output_tokens=4096, # Increased from 2000
         response_mime_type="application/json"
     )
 
@@ -287,7 +292,11 @@ CRITICAL: Be specific and timely. Avoid generic advice. Reference actual news fr
         
     except json.JSONDecodeError as e:
         print(f"❌ JSON parsing error: {e}")
-        print(f"Response was: {response_text[:500]}")
+        # 🟢 FIX: Ensure response_text is assigned before the raise block in case of parsing failure
+        try:
+            print(f"Response snippet: {response.text[:500]}")
+        except:
+            pass
         raise
     except Exception as e:
         # Catch the new ValueError we introduced for blocked responses
