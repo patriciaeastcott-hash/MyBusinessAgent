@@ -9,6 +9,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List
 
+# 🟢 FIX: Attempt to import orjson for robust JSON decoding
+try:
+    import orjson
+    JSON_LOADER = orjson.loads
+except ImportError:
+    JSON_LOADER = json.loads
+
+
 # Load environment variables
 from dotenv import load_dotenv
 load_dotenv()
@@ -19,6 +27,8 @@ from typing import Annotated
 
 # Gemini SDK
 import google.generativeai as genai
+# 🐛 FIX: Import the types module for the correct safety_settings syntax
+from google.generativeai import types 
 
 # Pure Chroma for private RAG (no LangChain)
 import chromadb
@@ -126,16 +136,22 @@ def retrieve_context(collection, query: str, k: int = 2) -> str:
     results = collection.query(query_texts=[query], n_results=k)
     return "\n".join(results['documents'][0])
 
-# === STEP 3: FETCH AUSTRALIAN NEWS ===
+# === STEP 3: FETCH AUSTRALIAN NEWS (UPDATED FOR 7 DAYS) ===
 def fetch_recent_news():
-    cutoff = datetime.now() - timedelta(days=30)
+    # ⚙️ CHANGE: Set cutoff to 7 days for the weekly report
+    cutoff = datetime.now() - timedelta(days=7) 
     articles = []
     for url in NEWS_SOURCES:
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries[:4]:
                 try:
-                    pub_date = date_parser.parse(entry.published)
+                    # Handle potentially missing or poorly formatted dates
+                    pub_date_str = getattr(entry, 'published', None) or getattr(entry, 'updated', None)
+                    if not pub_date_str:
+                        continue
+                    
+                    pub_date = date_parser.parse(pub_date_str)
                     if pub_date.tzinfo:
                         pub_date = pub_date.replace(tzinfo=None)
                     if pub_date >= cutoff:
@@ -148,18 +164,21 @@ def fetch_recent_news():
                 except:
                     continue
         except Exception as e:
-            print(f"⚠️  Warning: {url} - {e}")
+            print(f"⚠️  Warning: {url} - {e}")
             continue
     return articles[:6]
 
-# === STEP 4: STRUCTURED OUTPUT MODEL ===
+# === STEP 4: STRUCTURED OUTPUT MODEL (UPDATED for Weekly Prompt) ===
 class BusinessInsight(BaseModel):
-    title: str = Field(..., description="e.g., 'Australian Small Business Pulse: October 2025'")
-    summary: str = Field(..., description="2-sentence overview of the month's business climate")
-    key_updates: Annotated[List[str], Field(min_length=3, max_length=4, description="Actionable tips for micro-businesses")]
+    # Adjusted field name to match the new prompt output structure
+    title: str = Field(..., description="e.g., 'Australian Small Business Weekly: 21 Oct - 28 Oct 2025'")
+    # Increased summary length and updated focus for weekly report
+    summary: str = Field(..., description="3-4 paragraphs (no bullet points) focusing on THIS WEEK's specific developments, framed around AI, automation, and immediate opportunities for micro-businesses.")
+    # Adjusted field name to match the new prompt output structure
+    key_updates: Annotated[List[str], Field(min_length=3, max_length=4, description="Specific actionable, time-sensitive tips for micro-businesses, written in plain language, emphasizing AI, automation, or software agents based on THIS WEEK's news.")]
     sources: Annotated[List[str], Field(min_length=2, description="Source URLs")]
 
-# === STEP 5: GENERATE INSIGHTS (NATIVE GEMINI SDK) ===
+# === STEP 5: GENERATE INSIGHTS (NATIVE GEMINI SDK) (FIXED) ===
 def generate_insights(news_articles, kb_collection):
     # Prepare news
     news_text = "\n\n".join([
@@ -170,92 +189,115 @@ def generate_insights(news_articles, kb_collection):
     # Get brand/compliance context
     context = retrieve_context(kb_collection, "Australian small business compliance and brand voice")
     
-    # Create JSON schema for structured output
+    # Create JSON schema from Pydantic model
+    schema_data = BusinessInsight.model_json_schema()
     json_schema = {
         "type": "object",
         "properties": {
-            "title": {
-                "type": "string",
-                "description": "e.g., 'Australian Small Business Pulse: October 2025'"
-            },
-            "summary": {
-                "type": "string",
-                "description": "2-sentence overview of the month's business climate"
-            },
-            "key_updates": {
-                "type": "array",
-                "items": {"type": "string"},
-                "minItems": 3,
-                "maxItems": 4,
-                "description": "Actionable tips for micro-businesses"
-            },
-            "sources": {
-                "type": "array",
-                "items": {"type": "string"},
-                "minItems": 2,
-                "description": "Source URLs"
-            }
+            "title": schema_data["properties"]["title"],
+            "summary": schema_data["properties"]["summary"],
+            "key_updates": schema_data["properties"]["key_updates"],
+            "sources": schema_data["properties"]["sources"]
         },
         "required": ["title", "summary", "key_updates", "sources"]
     }
     
-    prompt = f"""[Your Guidelines]
-{context}
+    # Define the content of the emotional hook/CTA which is now inserted into the HTML, 
+    # not generated by the model (as the model's output schema changed).
+    hook_and_cta_text = (
+        "Don't let the technical talk drown you out! Just like Trish fought to find her feet, "
+        "DigitalABCs is here to simplify these Key Updates. We show you exactly how to use "
+        "simple agents and automation to turn this week's challenges into your next big opportunity."
+    )
 
-[Recent News]
+
+    prompt = f"""You are a trusted advisor to Australian micro-businesses (<5 employees) for DigitalABCs.
+
+[Your Guidelines]
+{context}
+- Your voice must be relatable, supportive, and empowering.
+- Crucially, frame all insights and key takeaways through the lens of AI, automation, and the use of simple software agents to simplify life and give power back to employees.
+
+[This Week's News - Last 7 Days]
 {news_text}
 
-You are a trusted advisor to Australian micro-businesses (<5 employees). 
-Generate a monthly insight that is practical, empowering, and grounded in Australian regulations.
-Write in clear, plain Australian English. Avoid jargon. Focus on actionable steps.
+IMPORTANT CONTEXT: This is a WEEKLY briefing. Focus ONLY on developments from the past 7 days.
 
-IMPORTANT: Respond with ONLY valid JSON that matches this exact structure:
+Your task: Analyze THIS WEEK's specific news and identify:
+1. New developments that happened THIS WEEK
+2. Emerging trends visible in this week's news cycle
+3. Time-sensitive opportunities or risks micro-businesses should act on NOW
+
+Respond with ONLY valid JSON that matches this exact structure:
 {json.dumps(json_schema, indent=2)}
 
-DO NOT include any text before or after the JSON. DO NOT use markdown code blocks. Just output the raw JSON."""
+CRITICAL: Be specific and timely. Avoid generic advice. Reference actual news from this week. DO NOT include any text before or after the JSON. Just output the raw JSON."""
 
-    # Use Gemini with native SDK
-    # Using Gemini 2.5 Pro (latest production model)
-    model = genai.GenerativeModel('models/gemini-2.5-pro')
+    # Define Safety Settings using the recommended moderate block threshold 
+    # (BLOCK_NONE was causing the safety filter to reject the request, Finish Reason 2)
+    # 🟢 FIX: Changed BLOCK_NONE to BLOCK_MEDIUM_AND_ABOVE for stability
+    safety_settings = {
+        types.HarmCategory.HARM_CATEGORY_HARASSMENT: types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        types.HarmCategory.HARM_CATEGORY_HATE_SPEECH: types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    }
+
+    # Create Generation Config 
+    generation_config = genai.types.GenerationConfig(
+        temperature=0.7,
+        max_output_tokens=2000,
+        response_mime_type="application/json"
+    )
+
+    # Use Gemini with native JSON mode
+    model = genai.GenerativeModel(
+        'models/gemini-2.5-pro',
+    )
     
     try:
-        print("🔄 Calling Gemini API (native SDK)...")
+        print("🔄 Calling Gemini API with JSON mode...")
         response = model.generate_content(
             prompt,
-            generation_config=genai.GenerationConfig(
-                temperature=0.7,
-                max_output_tokens=2000,
-            )
+            generation_config=generation_config, 
+            safety_settings=safety_settings
         )
+
+        # 🟢 FIX: Check the candidate's content existence before accessing .text
+        if not response.candidates or not response.candidates[0].content.parts:
+            # Get the finish reason if available
+            finish_reason = response.candidates[0].finish_reason.name if response.candidates else "UNKNOWN"
+            raise ValueError(
+                f"Model blocked generation. Finish Reason: {finish_reason}. "
+                "Review safety settings or simplify the prompt."
+            )
         
-        # Parse response
+        # 🟢 FIX: Use the robust JSON_LOADER imported at the top of the file
         response_text = response.text.strip()
-        
-        # Remove markdown code blocks if present
+        # Clean up any stray markdown blocks just in case
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]
             if response_text.startswith("json"):
                 response_text = response_text[4:]
             response_text = response_text.strip()
         
-        # Parse JSON
-        data = json.loads(response_text)
-        
-        # Validate and create Pydantic model
+        data = JSON_LOADER(response_text)
         insight = BusinessInsight(**data)
-        return insight
+        return insight, hook_and_cta_text # Return hook text separately for HTML rendering
         
     except json.JSONDecodeError as e:
         print(f"❌ JSON parsing error: {e}")
         print(f"Response was: {response_text[:500]}")
         raise
     except Exception as e:
+        # Catch the new ValueError we introduced for blocked responses
+        if isinstance(e, ValueError) and "Model blocked generation" in str(e):
+            raise
         print(f"❌ Gemini API error: {e}")
         raise
 
-# === STEP 6: SAVE OUTPUTS ===
-def save_outputs(insight: BusinessInsight):
-    month_year = datetime.now().strftime("%B %Y")
+# === STEP 6: SAVE OUTPUTS (UPDATED) ===
+def save_outputs(insight: BusinessInsight, hook_and_cta_text: str):
     date_str = datetime.now().strftime("%d %B %Y")
     
     # HTML (WCAG-ready)
@@ -266,22 +308,45 @@ def save_outputs(insight: BusinessInsight):
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{insight.title}</title>
     <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }}
-        h1 {{ color: #2c3e50; }}
-        h2 {{ color: #3498db; margin-top: 1.5em; }}
-        .date {{ color: #7f8c8d; font-style: italic; }}
+        /* DigitalABCs Brand Style & WCAG Compliance */
+        :root {{
+            --color-navy: #1E3A8A; 
+            --color-purple: #7C3AED; 
+            --color-green-cta: #10B981; 
+            --color-text: #1F2937; /* Darker grey for better contrast */
+        }}
+        body {{ font-family: Inter, Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; color: var(--color-text); background-color: white; }}
+        h1 {{ color: var(--color-navy); border-bottom: 2px solid var(--color-purple); padding-bottom: 0.2em; }}
+        h2 {{ color: var(--color-purple); margin-top: 1.5em; }}
+        .date {{ color: #6B7280; font-style: italic; }}
         ul {{ padding-left: 1.2em; }}
-        a {{ color: #2980b9; text-decoration: underline; }}
+        a {{ color: var(--color-purple); text-decoration: underline; }}
+        .cta-box {{ border: 1px solid var(--color-green-cta); background-color: #ecfdf5; padding: 15px; margin-top: 20px; border-radius: 8px; }}
+        .cta-text {{ font-weight: bold; color: var(--color-green-cta); }}
+        button.cta {{ background-color: var(--color-green-cta); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background-color 0.3s; }}
+        button.cta:hover {{ background-color: #0c9b6f; }}
+        /* Ensure paragraphs (summary) have line breaks for readability */
+        .summary-text {{ white-space: pre-wrap; }}
     </style>
 </head>
 <body>
     <h1>{insight.title}</h1>
     <p class="date">Published: {date_str}</p>
-    <p>{insight.summary}</p>
-    <h2>Key Updates for Your Business</h2>
-    <ul>{''.join(f'<li>{u}</li>' for u in insight.key_updates)}</ul>
+    
+    <h2>The Big Picture: AI, Automation, and Your Power</h2>
+    <p class="summary-text">{insight.summary}</p>
+    
+    <h2>Your Action Plan: Practical AI & Automation Takeaways</h2>
+    <ul>{''.join(f'<li><strong>Time-Sensitive Action:</strong> {u}</li>' for u in insight.key_updates)}</ul>
+    
+    <div class="cta-box">
+        <h2>Ready to Take Back Control?</h2>
+        <p class="cta-text">{hook_and_cta_text}</p>
+        <button class="cta" onclick="window.open('/start-your-automation-journey', '_self')">Start Simplifying Your Business Today</button>
+    </div>
+    
     <h2>Sources</h2>
-    <ul>{''.join(f'<li><a href="{s}" target="_blank" rel="noopener">{s}</a></li>' for s in insight.sources)}</ul>
+    <ul>{''.join(f'<li><a href="{s}" target="_blank" rel="noopener noreferrer">{s}</a></li>' for s in insight.sources)}</ul>
 </body>
 </html>"""
     
@@ -293,10 +358,13 @@ def save_outputs(insight: BusinessInsight):
     doc = DocxDocument()
     doc.add_heading(insight.title, 0)
     doc.add_paragraph(f"Published: {date_str}")
+    doc.add_heading("The Big Picture: AI, Automation, and Your Power", level=1)
     doc.add_paragraph(insight.summary)
-    doc.add_heading("Key Updates for Your Business", level=1)
+    doc.add_heading("Your Action Plan: Practical AI & Automation Takeaways", level=1)
     for update in insight.key_updates:
-        doc.add_paragraph(update, style='List Bullet')
+        doc.add_paragraph(f"Time-Sensitive Action: {update}", style='List Bullet')
+    doc.add_heading("Ready to Take Back Control?", level=1)
+    doc.add_paragraph(hook_and_cta_text)
     doc.add_heading("Sources", level=1)
     for src in insight.sources:
         doc.add_paragraph(src, style='List Bullet')
@@ -304,7 +372,7 @@ def save_outputs(insight: BusinessInsight):
     print(f"✅ Word doc saved: {DOCX_FILE}")
 
     # Excel
-    df = pd.DataFrame({"Action Item": insight.key_updates})
+    df = pd.DataFrame({"AI/Automation Action Item (Weekly Focus)": insight.key_updates})
     df.to_excel(EXCEL_FILE, index=False)
     print(f"✅ Excel saved: {EXCEL_FILE}")
 
@@ -321,17 +389,18 @@ def audit_accessibility():
         driver.get(f"file:///{HTML_FILE.resolve()}")
         axe = Axe(driver)
         axe.inject()
-        results = axe.run()
+        results = axe.run(options={'runOnly': {'type': 'tag', 'values': ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']}})
         driver.quit()
         
         if results["violations"]:
-            print("⚠️  WCAG issues found:")
+            print("⚠️  WCAG issues found:")
             for v in results["violations"]:
                 print(f" - {v['description']}")
+                print(f"  Affected nodes: {[n['html'] for n in v['nodes'][:2]]}...")
         else:
             print("✅ WCAG 2.1 AA compliant!")
     except Exception as e:
-        print(f"⚠️  Audit skipped: {e}")
+        print(f"⚠️  Accessibility Audit skipped (WebDriver issue in environment?): {e}")
 
 # === MAIN ===
 def main():
@@ -340,11 +409,12 @@ def main():
     # Setup
     kb = create_compliance_kb()
     news = fetch_recent_news()
-    print(f"📰 Found {len(news)} articles.")
+    print(f"📰 Found {len(news)} articles in the last 7 days.")
     
     # Generate
     try:
-        insight = generate_insights(news, kb)
+        # The generate_insights function now returns the insight object AND the static hook text
+        insight, hook_text = generate_insights(news, kb)
         print(f"🧠 Generated: {insight.title}")
     except Exception as e:
         print(f"❌ Generation failed: {e}")
@@ -355,7 +425,7 @@ def main():
         sys.exit(1)
     
     # Output
-    save_outputs(insight)
+    save_outputs(insight, hook_text)
     audit_accessibility()
     
     print(f"\n🎉 Success! Outputs in: {OUTPUT_DIR.resolve()}")
