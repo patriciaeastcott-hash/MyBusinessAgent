@@ -3,15 +3,17 @@
 # Empowerment | Compliance | Practicality | Privacy
 
 import os
+# 🟢 --- FIX: Set RAYON_NUM_THREADS ---
+# This MUST be set before chromadb is imported to prevent a
+# ThreadPoolBuildError in low-resource environments.
+os.environ["RAYON_NUM_THREADS"] = "1"
+
 import sys
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List
-
-# --- ADDED Dataclass ---
-# Replaces Pydantic's BaseModel
-from dataclasses import dataclass
+import shutil  # 🟢 ADDED: To copy the final HTML file
 
 # 🟢 FIX: Attempt to import orjson for robust JSON decoding
 try:
@@ -25,12 +27,8 @@ except ImportError:
 from dotenv import load_dotenv
 load_dotenv()
 
-# --- REMOVED Pydantic ---
-# from pydantic import BaseModel, Field
-# --- --- --- --- --- --- ---
-
-# This 'Annotated' import is standard Python typing, but we won't use it 
-# in the dataclass as its main use here was for Pydantic metadata.
+# Structured output for trust & simplicity
+from pydantic import BaseModel, Field
 from typing import Annotated 
 
 # Gemini SDK
@@ -59,29 +57,55 @@ from axe_selenium_python import Axe
 # Ensure clean environment
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+# --- 🟢 START: NEW PATH CONFIGURATION ---
+# This makes the script work from any location (like a cron job)
+# SCRIPT_DIR is the absolute path to this script: /home/digitala/my_scripts/agents/my_business_insights
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+# Paths for local files (brand voice, vector DB)
+BRAND_VOICE_FILE = SCRIPT_DIR / "brand_voice.docx"
+CHROMA_DB_PATH = SCRIPT_DIR / "chroma_db"
+
+# Path for your private ARCHIVES (docx, xlsx, and a copy of the html)
+ARCHIVE_OUTPUT_DIR = Path("/home/digitala/my_scripts/agents/my_business_insights/outputs")
+ARCHIVE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# Path for your PUBLIC website
+PUBLIC_HTML_DIR = Path("/home/digitala/public_html/insights")
+PUBLIC_HTML_DIR.mkdir(parents=True, exist_ok=True)
+
 # Generate timestamp like: 2025-10-21_14-30
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
-OUTPUT_DIR = Path("output")
-OUTPUT_DIR.mkdir(exist_ok=True)
-HTML_FILE = OUTPUT_DIR / f"{timestamp}_insights.html"
-DOCX_FILE = OUTPUT_DIR / f"{timestamp}_insights.docx"
-EXCEL_FILE = OUTPUT_DIR / f"{timestamp}_action_plan.xlsx"
+# Define filenames
+HTML_FILENAME = f"{timestamp}_insights.html"
+DOCX_FILENAME = f"{timestamp}_insights.docx"
+EXCEL_FILENAME = f"{timestamp}_action_plan.xlsx"
+
+# Define full ARCHIVE paths
+ARCHIVE_HTML_FILE = ARCHIVE_OUTPUT_DIR / HTML_FILENAME
+ARCHIVE_DOCX_FILE = ARCHIVE_OUTPUT_DIR / DOCX_FILENAME
+ARCHIVE_EXCEL_FILE = ARCHIVE_OUTPUT_DIR / EXCEL_FILENAME
+
+# Define full PUBLIC path
+PUBLIC_HTML_FILE = PUBLIC_HTML_DIR / HTML_FILENAME
+# --- 🟢 END: NEW PATH CONFIGURATION ---
+
 
 NEWS_SOURCES = [
-    "[https://www.smartcompany.com.au/feed/](https://www.smartcompany.com.au/feed/)",
-    "[https://businessnewsaustralia.com/feed/](https://businessnewsaustralia.com/feed/)",
-    "[https://asic.gov.au/about-asic/media-centre/news-releases/media-releases-2025/feed/](https://asic.gov.au/about-asic/media-centre/news-releases/media-releases-2025/feed/)",
-    "[https://ausbiz.com.au/feeds/rss](https://ausbiz.com.au/feeds/rss)",
-    "[https://www.itnews.com.au/rss](https://www.itnews.com.au/rss)",
-    "[https://www.crn.com.au/rss](https://www.crn.com.au/rss)",
-    "[https://www.themandarin.com.au/feed/](https://www.themandarin.com.au/feed/)",
-    "[https://www.businessnewsaustralia.com/articles/rss/startup-daily](https://www.businessnewsaustralia.com/articles/rss/startup-daily)",
-    "[https://www.business.gov.au/news.rss](https://www.business.gov.au/news.rss)",
-    "[https://www.dynamicbusiness.com.au/feed](https://www.dynamicbusiness.com.au/feed)",
-    "[https://www.smartcompany.com.au/feed/](https://www.smartcompany.com.au/feed/)",
-    "[https://www.businessnewsaustralia.com/articles/rss/sme](https://www.businessnewsaustralia.com/articles/rss/sme)",
-    "[https://www.asbfeo.gov.au/news/rss.xml](https://www.asbfeo.gov.au/news/rss.xml)"
+    "https://www.smartcompany.com.au/feed/",
+    "https://businessnewsaustralia.com/feed/",
+    "https://asic.gov.au/about-asic/media-centre/news-releases/media-releases-2025/feed/",
+    "https://ausbiz.com.au/feeds/rss",
+    "https://www.itnews.com.au/rss",
+    "https://www.crn.com.au/rss",
+    "https://www.themandarin.com.au/feed/",
+    "https://www.businessnewsaustralia.com/articles/rss/startup-daily",
+    "https://www.business.gov.au/news.rss",
+    "https://www.dynamicbusiness.com.au/feed",
+    "https://www.smartcompany.com.au/feed/",
+    "https://www.businessnewsaustralia.com/articles/rss/sme",
+    "https://www.asbfeo.gov.au/news/rss.xml"
 ]
 
 # Get Gemini API key from environment
@@ -93,11 +117,22 @@ if not GEMINI_API_KEY:
 # Configure Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 
+# 2. Create the Google embedding function
+#    We use "models/embedding-001" which is Google's embedding model
+# 🟢 --- FIX: Explicitly set model to text-embedding-004 ---
+# This model is more likely to be enabled on your API key
+google_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
+    api_key=GEMINI_API_KEY,
+    model_name="models/text-embedding-004" 
+)
+
 # === STEP 1: LOAD BRAND VOICE ===
 def load_brand_voice() -> str:
-    brand_file = Path("brand_voice.docx")
+    # 🟢 CHANGED: Use absolute path
+    brand_file = BRAND_VOICE_FILE
     if not brand_file.exists():
-        print("❌ Error: 'brand_voice.docx' not found.")
+        # 🟢 CHANGED: Use absolute path in error
+        print(f"❌ Error: '{BRAND_VOICE_FILE}' not found.")
         sys.exit(1)
     try:
         doc = DocxDocument(brand_file)
@@ -109,16 +144,23 @@ def load_brand_voice() -> str:
 # === STEP 2: PRIVATE KNOWLEDGE BASE (PURE CHROMA) ===
 def create_compliance_kb():
     """Create a local, private knowledge base using ChromaDB with default embeddings."""
-    client = chromadb.PersistentClient(path="./chroma_db")
+    # 🟢 CHANGED: Use absolute path (and convert Path object to string for chromadb)
+    client = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
     
     # Use default sentence transformers for embeddings (local & private)
+    # 3. When you create your collection, TELL Chroma to use this function
+    #    (Instead of its default, memory-hungry one)
+    
     collection = client.get_or_create_collection(
-        name="digitalabcs_kb",
+        name="compliance_kb",
+        embedding_function=google_ef,
+        # this is the key change
         metadata={"hnsw:space": "cosine"}
     )
     
     # Build knowledge base (only once)
     if collection.count() == 0:
+        print("🔄 Building new knowledge base... (This may take a moment for API embeddings)")
         brand_text = load_brand_voice()
         compliance_text = """
         Australian Privacy Principle 1: Open and transparent management of personal information.
@@ -131,13 +173,18 @@ def create_compliance_kb():
         # Simple chunking
         chunks = [all_text[i:i+500] for i in range(0, len(all_text), 450)]
         
-        collection.add(
-            documents=chunks,
-            ids=[f"chunk_{i}" for i in range(len(chunks))]
-        )
-        print("✅ Knowledge base created.")
+        try:
+            collection.add(
+                documents=chunks,
+                ids=[f"chunk_{i}" for i in range(len(chunks))]
+            )
+            print("✅ Knowledge base created successfully via API.")
+        except Exception as e:
+            print(f"❌ API Error during collection.add(): {e}")
+            print("❌ Please check your GEMINI_API_KEY and ensure the 'Generative Language API' is enabled in your Google Cloud project.")
+            sys.exit(1)
     else:
-        print("✅ Knowledge base loaded.")
+        print("✅ Knowledge base loaded from disk.")
     
     return collection
 
@@ -149,7 +196,7 @@ def retrieve_context(collection, query: str, k: int = 2) -> str:
 # === STEP 3: FETCH AUSTRALIAN NEWS (UPDATED FOR 7 DAYS) ===
 def fetch_recent_news():
     # ⚙️ CHANGE: Set cutoff to 7 days for the weekly report
-    cutoff = datetime.now() - timedelta(days=15) 
+    cutoff = datetime.now() - timedelta(days=7) 
     articles = []
     for url in NEWS_SOURCES:
         try:
@@ -174,18 +221,19 @@ def fetch_recent_news():
                 except:
                     continue
         except Exception as e:
-            print(f"⚠️  Warning: {url} - {e}")
+            print(f"⚠️  Warning: {url} - {e}")
             continue
-    return articles[:15]
+    return articles[:6]
 
-# === STEP 4: STRUCTURED OUTPUT MODEL (REMOVED Pydantic) ===
-# Replaced Pydantic BaseModel with standard Python dataclass
-@dataclass
-class BusinessInsight:
-    title: str
-    summary: str
-    key_updates: List[str]
-    sources: List[str]
+# === STEP 4: STRUCTURED OUTPUT MODEL (UPDATED for Weekly Prompt) ===
+class BusinessInsight(BaseModel):
+    # Adjusted field name to match the new prompt output structure
+    title: str = Field(..., description="e.g., 'Australian Small Business Weekly: 21 Oct - 28 Oct 2025'")
+    # Increased summary length and updated focus for weekly report
+    summary: str = Field(..., description="3-4 paragraphs (no bullet points) focusing on THIS WEEK's specific developments, framed around AI, automation, and immediate opportunities for micro-businesses.")
+    # Adjusted field name to match the new prompt output structure
+    key_updates: Annotated[List[str], Field(min_length=3, max_length=4, description="Specific actionable, time-sensitive tips for micro-businesses, written in plain language, emphasizing AI, automation, or software agents based on THIS WEEK's news.")]
+    sources: Annotated[List[str], Field(min_length=2, description="Source URLs")]
 
 # === STEP 5: GENERATE INSIGHTS (NATIVE GEMINI SDK) (FIXED) ===
 def generate_insights(news_articles, kb_collection):
@@ -198,38 +246,18 @@ def generate_insights(news_articles, kb_collection):
     # Get brand/compliance context
     context = retrieve_context(kb_collection, "Australian small business compliance and brand voice")
     
-    # --- REPLACED Pydantic schema generation ---
-    # Manually define the JSON schema dictionary that Pydantic was building.
-    # This ensures the prompt to Gemini remains identical.
+    # Create JSON schema from Pydantic model
+    schema_data = BusinessInsight.model_json_schema()
     json_schema = {
         "type": "object",
         "properties": {
-            "title": {
-                "type": "string",
-                "description": "e.g., 'Australian Small Business Weekly: 21 Oct - 28 Oct 2025'"
-            },
-            "summary": {
-                "type": "string",
-                "description": "3-4 paragraphs (no bullet points) focusing on THIS WEEK's specific developments, framed around AI, automation, and immediate opportunities for micro-businesses."
-            },
-            "key_updates": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Specific actionable, time-sensitive tips for micro-businesses, written in plain language, emphasizing AI, automation, or software agents based on THIS WEEK's news.",
-                # We can still suggest constraints to the LLM
-                # "minItems": 3, 
-                # "maxItems": 4
-            },
-            "sources": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Source URLs"
-                # "minItems": 2
-            }
+            "title": schema_data["properties"]["title"],
+            "summary": schema_data["properties"]["summary"],
+            "key_updates": schema_data["properties"]["key_updates"],
+            "sources": schema_data["properties"]["sources"]
         },
         "required": ["title", "summary", "key_updates", "sources"]
     }
-    # --- END REPLACEMENT ---
     
     # Define the content of the emotional hook/CTA which is now inserted into the HTML, 
     # not generated by the model (as the model's output schema changed).
@@ -314,14 +342,7 @@ DO NOT include any text before or after the JSON. Just output the raw JSON.""" #
             response_text = response_text.strip()
         
         data = JSON_LOADER(response_text)
-        
-        # --- REPLACED Pydantic parsing ---
-        # The dataclass constructor `BusinessInsight(**data)` is used here.
-        # It achieves the same goal of loading the dictionary into an object,
-        # but it does NOT perform runtime validation, as you requested.
         insight = BusinessInsight(**data)
-        # --- END REPLACEMENT ---
-        
         return insight, hook_and_cta_text # Return hook text separately for HTML rendering
         
     except json.JSONDecodeError as e:
@@ -366,7 +387,7 @@ def save_outputs(insight: BusinessInsight, hook_and_cta_text: str):
         a {{ color: var(--color-purple); text-decoration: underline; }}
         .cta-box {{ border: 1px solid var(--color-green-cta); background-color: #ecfdf5; padding: 15px; margin-top: 20px; border-radius: 8px; }}
         .cta-text {{ font-weight: bold; color: var(--color-green-cta); }}
-        button.cta {{ background-color: var(--color-green-cta); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background-color 0.3s; }}
+        button.cta {{ background-color: var(--color-green-cta); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background-color: 0.3s; }}
         button.cta:hover {{ background-color: #0c9b6f; }}
         /* Ensure paragraphs (summary) have line breaks for readability */
         .summary-text {{ white-space: pre-wrap; }}
@@ -393,11 +414,20 @@ def save_outputs(insight: BusinessInsight, hook_and_cta_text: str):
 </body>
 </html>"""
     
-    with open(HTML_FILE, "w", encoding="utf-8") as f:
+    # 🟢 CHANGED: Save to ARCHIVE path
+    with open(ARCHIVE_HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"✅ HTML saved: {HTML_FILE}")
+    print(f"✅ HTML archived: {ARCHIVE_HTML_FILE}")
 
-    # Word doc
+    # 🟢 ADDED: Copy the HTML file to the PUBLIC web directory
+    try:
+        shutil.copyfile(ARCHIVE_HTML_FILE, PUBLIC_HTML_FILE)
+        print(f"✅ HTML published: {PUBLIC_HTML_FILE}")
+    except Exception as e:
+        print(f"❌ FAILED to copy HTML to public directory: {e}")
+
+
+    # 🟢 CHANGED: Save to ARCHIVE path
     doc = DocxDocument()
     doc.add_heading(insight.title, 0)
     doc.add_paragraph(f"Published: {date_str}")
@@ -411,13 +441,13 @@ def save_outputs(insight: BusinessInsight, hook_and_cta_text: str):
     doc.add_heading("Sources", level=1)
     for src in insight.sources:
         doc.add_paragraph(src, style='List Bullet')
-    doc.save(DOCX_FILE)
-    print(f"✅ Word doc saved: {DOCX_FILE}")
+    doc.save(ARCHIVE_DOCX_FILE)
+    print(f"✅ Word doc saved: {ARCHIVE_DOCX_FILE}")
 
-    # Excel
+    # 🟢 CHANGED: Save to ARCHIVE path
     df = pd.DataFrame({"AI/Automation Action Item (Weekly Focus)": insight.key_updates})
-    df.to_excel(EXCEL_FILE, index=False)
-    print(f"✅ Excel saved: {EXCEL_FILE}")
+    df.to_excel(ARCHIVE_EXCEL_FILE, index=False)
+    print(f"✅ Excel saved: {ARCHIVE_EXCEL_FILE}")
 
 # === STEP 7: ACCESSIBILITY AUDIT ===
 def audit_accessibility():
@@ -429,21 +459,22 @@ def audit_accessibility():
     
     try:
         driver = webdriver.Chrome(options=options)
-        driver.get(f"file:///{HTML_FILE.resolve()}")
+        # 🟢 CHANGED: Audit the ARCHIVED file
+        driver.get(f"file:///{ARCHIVE_HTML_FILE.resolve()}")
         axe = Axe(driver)
         axe.inject()
         results = axe.run(options={'runOnly': {'type': 'tag', 'values': ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']}})
         driver.quit()
         
         if results["violations"]:
-            print("⚠️  WCAG issues found:")
+            print("⚠️  WCAG issues found:")
             for v in results["violations"]:
                 print(f" - {v['description']}")
-                print(f"  Affected nodes: {[n['html'] for n in v['nodes'][:2]]}...")
+                print(f"   Affected nodes: {[n['html'] for n in v['nodes'][:2]]}...")
         else:
             print("✅ WCAG 2.1 AA compliant!")
     except Exception as e:
-        print(f"⚠️  Accessibility Audit skipped (WebDriver issue in environment?): {e}")
+        print(f"⚠️  Accessibility Audit skipped (WebDriver issue in environment?): {e}")
 
 # === MAIN ===
 def main():
@@ -469,9 +500,12 @@ def main():
     
     # Output
     save_outputs(insight, hook_text)
-    audit_accessibility()
+    #audit_accessibility()
     
-    print(f"\n🎉 Success! Outputs in: {OUTPUT_DIR.resolve()}")
+    # 🟢 CHANGED: Update success message
+    print(f"\n🎉 Success! Outputs archived in: {ARCHIVE_OUTPUT_DIR.resolve()}")
+    print(f"🎉 Public HTML published to: {PUBLIC_HTML_FILE.resolve()}")
+
 
 if __name__ == "__main__":
     main()

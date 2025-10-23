@@ -1,3 +1,8 @@
+
+/home/digitala/my_scripts/agents/my_business_insights/venv/bin/python /home/digitala/my_scripts/agents/my_business_insights/insights_agent.py > /home/digitala/my_scripts/agents/my_business_insights/cron.log 2>&1
+
+
+
 # insights_agent.py
 # DigitalABCs Compliant AI Agent — Pure Local Stack
 # Empowerment | Compliance | Practicality | Privacy
