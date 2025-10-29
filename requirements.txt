@@ -1,1 +1,14 @@
-python-dotenvpydanticgoogle-generativeaichromadbpython-dateutilfeedparserpython-docxpandasopenpyxlseleniumaxe-selenium-pythonorjson
+pip>=24.0
+python-dotenv
+pydantic
+google-generativeai
+chromadb
+python-dateutil
+feedparser
+python-docx
+pandas
+openpyxl
+selenium
+axe-selenium-python
+orjson
+google-cloud-aiplatform
