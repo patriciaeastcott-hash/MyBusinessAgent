@@ -1,0 +1,77 @@
+2025-11-20 04:06:38,614 - ERROR - Email failed: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-29b5b25c0b3sm110445ad.63 - gsmtp')
+2025-11-20 04:13:59,763 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:14:04,337 - INFO - No new relevant articles found in last 7 days.
+2025-11-20 04:14:07,048 - ERROR - Email failed: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d2e1a72fcca58-7b9256b9283sm20381409b3a.33 - gsmtp')
+2025-11-20 04:20:36,328 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:20:56,446 - ERROR - Pipeline failed: 404 models/gemini-2.5-pro-001 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-11-20 04:21:35,192 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:21:51,989 - INFO - No new relevant articles found in last 7 days.
+2025-11-20 04:27:37,279 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:27:55,778 - INFO - No new relevant articles found in last 7 days.
+2025-11-20 04:27:55,781 - ERROR - Pipeline failed: Article generation returned empty content
+2025-11-20 04:28:32,918 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:28:49,722 - ERROR - Pipeline failed: Article generation returned empty content
+2025-11-20 04:29:14,331 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:29:31,265 - ERROR - Imagen failed: module 'google.cloud.aiplatform' has no attribute 'ImageGenerationModel'
+2025-11-20 04:29:31,266 - WARNING - Thumbnail generation failed. Used fallback or skipped.
+2025-11-20 04:32:25,761 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:32:54,285 - INFO - Article 'Australian Small Business Tech & Compliance Update' (4 words) generated.
+Files: 20251119_article.html
+2025-11-20 04:38:09,465 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:38:30,536 - ERROR - Pipeline failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 2.
+2025-11-20 04:48:27,113 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:49:10,694 - WARNING - Safety block. Retrying with redacted prompt.
+2025-11-20 04:49:30,258 - ERROR - Gemini failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 2.
+2025-11-20 04:49:42,240 - INFO - Article 'Australian Business Insights' (4 words) generated. Files: 20251119_article.html, 20251119_thumbnail.jpg
+2025-11-20 04:49:45,138 - ERROR - Email failed: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-29b5b25c20dsm831375ad.59 - gsmtp')
+2025-11-20 04:56:35,522 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:56:38,125 - INFO - Generating article based on 12 new items...
+2025-11-20 04:56:38,619 - ERROR - Gemini Generation failed: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-11-20 04:56:38,620 - ERROR - Pipeline failed: Content generation returned empty.
+2025-11-20 04:57:22,656 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 04:57:24,807 - INFO - No new articles found.
+2025-11-20 05:01:46,387 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:01:49,797 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:01:50,321 - ERROR - Gemini Synthetic Generation failed: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-11-20 05:01:50,322 - ERROR - Pipeline failed: Content generation returned empty content or failed.
+2025-11-20 05:01:53,155 - ERROR - Email failed: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials 41be03b00d2f7-bd760ac4ba2sm89823a12.28 - gsmtp')
+2025-11-20 05:02:13,909 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:02:15,835 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:02:16,248 - ERROR - Gemini Synthetic Generation failed: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-11-20 05:02:16,248 - ERROR - Pipeline failed: Content generation returned empty content or failed.
+2025-11-20 05:02:19,675 - ERROR - Email failed: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d2e1a72fcca58-7c3ed37824esm16531b3a.18 - gsmtp')
+2025-11-20 05:02:48,741 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:02:56,338 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:03:53,976 - WARNING - Upload URL or Secret not set. Skipping upload.
+2025-11-20 05:03:53,976 - INFO - Article 'Escaping the Reaction Trap: The True Cost of Running Your Business on High Alert' generated and uploaded.
+2025-11-20 05:03:56,727 - ERROR - Email failed: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-29b5b25df80sm1090415ad.52 - gsmtp')
+2025-11-20 05:25:19,985 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:25:25,228 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:26:09,200 - WARNING - Thumbnail generation failed. Ensure Vertex AI is configured correctly.
+2025-11-20 05:26:09,221 - ERROR - Upload exception: [Errno 2] No such file or directory: 'C:\\Users\\trish\\Agents\\MyBusinessAgent\\InsightsData\\20251119_1826_thumbnail.png'
+2025-11-20 05:26:09,221 - ERROR - Pipeline failed: cannot access local variable 'files' where it is not associated with a value
+2025-11-20 05:26:12,075 - ERROR - Email failed: (534, b'5.7.9 Application-specific password required. For more information, go to\n5.7.9  https://support.google.com/mail/?p=InvalidSecondFactor 98e67ed59e1d1-34727be33dbsm44245a91.8 - gsmtp')
+2025-11-20 05:27:53,961 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:27:58,282 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:28:45,785 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-20 05:28:53,332 - ERROR - Upload failed: 400 - {"status":"partial_failure","message":"Some files failed to upload.","errors":["Filename must start with 8-digit date (e.g., 20251119_article.html)"],"saved_files":["20251119_1828_article.html"]}
+2025-11-20 05:28:53,336 - INFO - Article 'The Stability Blueprint: Why Your Business's Survival Depends on What You Automate' generated and uploaded.
+2025-11-20 05:28:56,088 - ERROR - Email failed: (534, b'5.7.9 Application-specific password required. For more information, go to\n5.7.9  https://support.google.com/mail/?p=InvalidSecondFactor 41be03b00d2f7-bd75dfeeaffsm154549a12.5 - gsmtp')
+2025-11-20 05:38:29,382 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:38:32,866 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:39:09,356 - ERROR - Imagen failed: 400 Image generation failed with the following error: The prompt could not be submitted. This prompt contains sensitive words that violate Google's Responsible AI practices. Try rephrasing the prompt. If you think this was an error, send feedback. Support codes: 42876398
+2025-11-20 05:39:09,357 - WARNING - Thumbnail generation failed. Ensure Vertex AI is configured correctly.
+2025-11-20 05:39:09,376 - ERROR - Upload exception: [Errno 2] No such file or directory: 'C:\\Users\\trish\\Agents\\MyBusinessAgent\\InsightsData\\20251119_1839_thumbnail.png'
+2025-11-20 05:39:09,377 - ERROR - Pipeline failed: cannot access local variable 'files' where it is not associated with a value
+2025-11-20 05:39:13,674 - INFO - Email alert sent
+2025-11-20 05:41:50,598 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 05:41:55,401 - WARNING - No new articles found. Synthesizing content from 36 stored items.
+2025-11-20 05:42:37,961 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-20 05:42:47,489 - INFO - Article 'The Cognitive Tax: Why Your Brain is the Most Expensive Bottleneck in Your Business' generated and uploaded.
+2025-11-20 05:42:51,274 - INFO - Email alert sent
+2025-11-20 12:50:54,209 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-20 12:50:58,728 - INFO - Found 6 new articles. Generating timely report.
+2025-11-20 12:51:38,801 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-20 12:51:51,005 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251120_0151_article.html","20251120_0151_thumbnail.png"]}
+2025-11-20 12:51:51,011 - INFO - Article 'The Rescuer's Trap: Why Your Business Needs a System Reboot Now' generated and uploaded.
+2025-11-20 12:51:55,798 - INFO - Email alert sent

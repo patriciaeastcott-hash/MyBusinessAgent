@@ -1,3 +1,10 @@
-# Ignore Python virtual environment
-venv/
+# Ignore Secrets and Keys
 .env
+*.json
+client_secret_*.json
+gen-lang-client-*.json
+
+# Ignore Python caches
+__pycache__/
+*.pyc
+venv/
