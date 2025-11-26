@@ -92,7 +92,7 @@ def is_business_article(title: str, summary: str, source: str) -> bool:
     business_signals = [
         'accc', 'asic', 'oaic', 'compliance', 'regulation', 'law', 'policy',
         'small business', 'sme', 'startup', 'funding', 'grant', 'scam', 'cyber',
-        'data privacy', 'automation', 'governance', 'penalty', 'digital', 'ai', 'inclusion'
+        'data privacy', 'automation', 'governance', 'penalty', 'digital', 'ai', 'inclusion','government'
     ]
     
     # Require at least one strong signal
@@ -176,11 +176,12 @@ def parse_feeds(seen_keys: Set[str]) -> List[Dict]:
 
 def generate_detailed_article(articles: List[Dict]) -> str:
     """
-    Generates a timely article based on NEW articles using Brand Voice & WCAG compliance.
+    Generates a timely article based on NEW articles using Brand Voice,
+    WCAG 2.2 AA Compliance, and Neurodivergent-Friendly Formatting.
     """
     if not articles:
         return ""
-    
+
     sources = "\n".join([
         f"- {a['title']} ({a['source']}): {a['summary'][:400]}..."
         for a in articles
@@ -189,22 +190,33 @@ def generate_detailed_article(articles: List[Dict]) -> str:
     prompt = f"""
     You are Trish, the 'Chaos-to-Clarity Architect'. You help overwhelmed Australian small business owners build systems that work with their brains, not against them, promoting 'Asynchronous Automation'.
 
-    **Task:** Write a detailed, timely blog post (~1000 words) summarizing the immediate impact of the following recent news items. Anchor the advice to the principle: "Stop being the 'rescuer' in your own business. Let the systems do the work for you."
+    **Task:** Write a concise, detailed, and timely blog post summarizing the immediate impact of the following recent news items. Anchor the advice to the core principle: "Stop being the 'rescuer' in your own business. Let the systems do the work for you."
+
+    **Length Constraint:**
+    - Aim for **2000 words** minimum, but **do not stop mid-sentence or mid-section** if the content requires more detail.
+    - The absolute maximum token limit is **10000**. **Do not use any token count other than 5000** as a hard cap.
 
     **Sources:**
     {sources}
 
-    **Tone Guidelines (WCAG Compliant):**
-    1.  **Authentic & Inclusive:** Use plain language. No corporate fluff. Be approachable.
-    2.  **Neurodivergent Friendly:** Short paragraphs, clear <h2> headers, and bullet points.
-    3.  **Focus:** Compliance, AI safety, scams, and opportunity.
-    
+    **Brand and Compliance Guidelines:**
+    1.  **Brand Voice (Authentic & Inclusive):** Use plain language (avoiding jargon or corporate fluff). The tone must be approachable, supportive, and empowering.
+    2.  **Neurodivergent-Friendly Formatting:**
+        * Use short, digestible paragraphs (max 3-4 sentences).
+        * Employ clear, descriptive **<h2>** headers to break up the text.
+        * Use **bold** text and **bulleted lists** extensively to guide the reader's eye and highlight key takeaways.
+    3.  **WCAG 2.2 AA Conformance:**
+        * Ensure the final HTML has a clear, logical heading structure (H2 must follow H1, etc., though H1 is assumed to be the article title).
+        * Use **strong** tags (not *b*) for emphasis.
+        * Ensure all content is easily **Perceivable, Operable, Understandable, and Robust**.
+    4.  **Content Focus:** The article must cover compliance (Australian/GDPR), AI safety, identifying scams, and recognizing tech opportunities for small business owners.
+
     **Output Requirements:**
-    -   Format: Clean HTML (h2, p, ul, li, strong).
+    - Format: Clean HTML only (h2, p, ul, li, strong).
     """
 
     try:
-        model = genai.GenerativeModel("gemini-2.5-pro")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(
             prompt,
             generation_config={"max_output_tokens": 3000}
@@ -245,7 +257,7 @@ def generate_synthetic_article(full_kb: List[Dict]) -> str:
     """
 
     try:
-        model = genai.GenerativeModel("gemini-2.5-pro")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(
             prompt,
             generation_config={"max_output_tokens": 3000}

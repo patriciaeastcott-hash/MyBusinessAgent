@@ -75,3 +75,75 @@ Files: 20251119_article.html
 2025-11-20 12:51:51,005 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251120_0151_article.html","20251120_0151_thumbnail.png"]}
 2025-11-20 12:51:51,011 - INFO - Article 'The Rescuer's Trap: Why Your Business Needs a System Reboot Now' generated and uploaded.
 2025-11-20 12:51:55,798 - INFO - Email alert sent
+2025-11-26 05:45:05,869 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 05:45:08,626 - INFO - Found 26 new articles. Generating timely report.
+2025-11-26 05:45:48,339 - WARNING - Thumbnail generation failed. Ensure Vertex AI is configured correctly.
+2025-11-26 05:45:48,356 - WARNING - Image file missing. Uploading article text only.
+2025-11-26 05:45:48,356 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 05:45:48,797 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1845_article.html"]}
+2025-11-26 05:45:48,800 - INFO - Article 'The AI Tsunami Isn't a Distant Wave—It's on Your Shore' generated and uploaded.
+2025-11-26 05:45:53,027 - INFO - Email alert sent
+2025-11-26 06:31:39,058 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:31:42,636 - WARNING - No new articles found. Synthesizing content from 49 stored items.
+2025-11-26 06:31:59,568 - ERROR - Gemini Synthetic Generation failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 2.
+2025-11-26 06:31:59,569 - ERROR - Pipeline failed: Content generation returned empty content or failed.
+2025-11-26 06:32:04,622 - INFO - Email alert sent
+2025-11-26 06:32:34,118 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:32:36,236 - WARNING - No new articles found. Synthesizing content from 49 stored items.
+2025-11-26 06:33:04,821 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 06:33:06,878 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1932_article.html","20251125_1932_thumbnail.png"]}
+2025-11-26 06:33:06,881 - INFO - Article 'Beyond the Hype: Your Stability Blueprint in a World of AI, Red Tape, and Rapid Change' generated and uploaded.
+2025-11-26 06:33:11,993 - INFO - Email alert sent
+2025-11-26 06:38:19,385 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:38:22,294 - INFO - Found 2 new articles. Generating timely report.
+2025-11-26 06:38:49,663 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 06:38:51,535 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1938_article.html","20251125_1938_thumbnail.png"]}
+2025-11-26 06:38:51,537 - INFO - Article 'Chaos to Clarity: Stop Rescuing, Start Systemising – What Recent News Means for Your Aussie Business' generated and uploaded.
+2025-11-26 06:38:56,292 - INFO - Email alert sent
+2025-11-26 06:41:33,056 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:41:35,172 - WARNING - No new articles found. Synthesizing content from 51 stored items.
+2025-11-26 06:42:03,521 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 06:42:04,534 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1941_article.html","20251125_1941_thumbnail.png"]}
+2025-11-26 06:42:04,537 - INFO - Article 'Beyond the Buzzwords: Taming the Tsunami of Tech, Red Tape, and Risk with Asynchronous Automation' generated and uploaded.
+2025-11-26 06:42:09,158 - INFO - Email alert sent
+2025-11-26 06:43:38,269 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:43:42,487 - WARNING - No new articles found. Synthesizing content from 51 stored items.
+2025-11-26 06:44:00,437 - ERROR - Gemini Synthetic Generation failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 2.
+2025-11-26 06:44:00,437 - ERROR - Pipeline failed: Content generation returned empty content or failed.
+2025-11-26 06:44:05,095 - INFO - Email alert sent
+2025-11-26 06:44:21,996 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:44:24,624 - WARNING - No new articles found. Synthesizing content from 51 stored items.
+2025-11-26 06:44:41,280 - ERROR - Gemini Synthetic Generation failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 2.
+2025-11-26 06:44:41,281 - ERROR - Pipeline failed: Content generation returned empty content or failed.
+2025-11-26 06:44:45,942 - INFO - Email alert sent
+2025-11-26 06:45:18,710 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:45:20,867 - WARNING - No new articles found. Synthesizing content from 51 stored items.
+2025-11-26 06:45:49,132 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 06:45:50,051 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1945_article.html","20251125_1945_thumbnail.png"]}
+2025-11-26 06:45:50,052 - INFO - Article 'Australian Business Insights' generated and uploaded.
+2025-11-26 06:45:54,542 - INFO - Email alert sent
+2025-11-26 06:48:54,621 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:48:58,041 - WARNING - No new articles found. Synthesizing content from 51 stored items.
+2025-11-26 06:49:26,002 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 06:49:26,927 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1949_article.html","20251125_1949_thumbnail.png"]}
+2025-11-26 06:49:26,929 - INFO - Article 'Australian Business Insights' generated and uploaded.
+2025-11-26 06:49:31,239 - INFO - Email alert sent
+2025-11-26 06:50:03,940 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 06:50:03,941 - WARNING - Failed to load KB: Expecting value: line 1 column 1 (char 0)
+2025-11-26 06:50:07,583 - INFO - Found 27 new articles. Generating timely report.
+2025-11-26 06:50:35,123 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 06:50:36,006 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251125_1950_article.html","20251125_1950_thumbnail.png"]}
+2025-11-26 06:50:36,008 - INFO - Article 'The Evolving Threat: Why Your Systems MUST Protect You (and Your Customers)' generated and uploaded.
+2025-11-26 06:50:41,013 - INFO - Email alert sent
+2025-11-26 11:00:01,527 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 11:00:08,066 - INFO - Found 6 new articles. Generating timely report.
+2025-11-26 11:00:36,807 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 11:00:43,986 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251126_0000_article.html","20251126_0000_thumbnail.png"]}
+2025-11-26 11:00:43,990 - INFO - Article 'Stop Rescuing Your Business: How Recent Tech & Trends Can Set You Free' generated and uploaded.
+2025-11-26 11:00:50,655 - INFO - Email alert sent
+2025-11-26 11:20:05,790 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-26 11:20:10,761 - WARNING - No new articles found. Synthesizing content from 33 stored items.
+2025-11-26 11:20:36,590 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-26 11:20:49,238 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251126_0020_article.html","20251126_0020_thumbnail.png"]}
+2025-11-26 11:20:49,244 - INFO - Article 'Australian Business Insights' generated and uploaded.
+2025-11-26 11:20:54,734 - INFO - Email alert sent
