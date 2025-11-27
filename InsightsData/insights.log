@@ -147,3 +147,35 @@ Files: 20251119_article.html
 2025-11-26 11:20:49,238 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251126_0020_article.html","20251126_0020_thumbnail.png"]}
 2025-11-26 11:20:49,244 - INFO - Article 'Australian Business Insights' generated and uploaded.
 2025-11-26 11:20:54,734 - INFO - Email alert sent
+2025-11-27 15:16:24,434 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-27 15:16:32,509 - INFO - Found 19 new articles. Generating timely report.
+2025-11-27 15:16:48,337 - ERROR - Gemini Detailed Generation failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 2.
+2025-11-27 15:16:48,338 - ERROR - Pipeline failed: Content generation returned empty content or failed.
+2025-11-27 15:16:53,443 - INFO - Email alert sent
+2025-11-27 15:17:40,092 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-27 15:17:43,826 - WARNING - No new articles found. Synthesizing content from 52 stored items.
+2025-11-27 15:18:16,977 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-27 15:19:03,772 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251127_0418_article.html","20251127_0418_thumbnail.png"]}
+2025-11-27 15:19:03,775 - INFO - Article 'The "Digital Overwhelm Paradox": Why You Need Asynchronous Automation to Master the AI & Regulatory Storm' generated and uploaded.
+2025-11-27 15:19:08,105 - INFO - Email alert sent
+2025-11-27 15:33:30,373 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-27 15:33:36,495 - WARNING - No new articles found. Synthesizing content from 52 stored items.
+2025-11-27 15:34:10,571 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-27 15:34:30,761 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251127_0433_article.html","20251127_0433_thumbnail.png"]}
+2025-11-27 15:34:30,765 - INFO - Article 'Taming the Tech Tsunami: How Asynchronous Automation Builds Your Unshakeable Business (and Saves Your Sanity) in a World of Digital Chaos and Red Tape' generated and uploaded.
+2025-11-27 15:34:48,550 - INFO - Email alert sent
+2025-11-27 15:35:23,652 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-27 15:35:28,388 - WARNING - No new articles found. Synthesizing content from 52 stored items.
+2025-11-27 15:36:01,466 - WARNING - Thumbnail generation failed. Ensure Vertex AI is configured correctly.
+2025-11-27 15:36:01,477 - WARNING - Image file missing. Uploading article text only.
+2025-11-27 15:36:01,478 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-27 15:36:01,947 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251127_0435_article.html"]}
+2025-11-27 15:36:01,951 - INFO - Article 'The Stealth Drain on Your Genius: Why Proactive Digital Architecture is Your Business’s Stability Blueprint' generated and uploaded.
+2025-11-27 15:36:07,726 - INFO - Email alert sent
+2025-11-27 15:40:25,823 - INFO - Starting DigitalABCs Insight Pipeline...
+2025-11-27 15:40:25,824 - WARNING - Failed to load KB: Expecting value: line 1 column 1 (char 0)
+2025-11-27 15:40:29,448 - INFO - Found 28 new articles. Generating timely report.
+2025-11-27 15:42:32,141 - INFO - Uploading to https://www.digitalabcs.com.au/insights/upload_handler.php...
+2025-11-27 15:42:46,374 - INFO - Success! Server responded: {"status":"success","message":"Files uploaded successfully.","saved_files":["20251127_0441_article.html","20251127_0441_thumbnail.png"]}
+2025-11-27 15:42:46,376 - INFO - Article 'AI is Everywhere: Embrace Smartly, Not Scramble-y' generated and uploaded.
+2025-11-27 15:43:00,831 - INFO - Email alert sent

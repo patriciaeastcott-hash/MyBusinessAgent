@@ -192,10 +192,6 @@ def generate_detailed_article(articles: List[Dict]) -> str:
 
     **Task:** Write a concise, detailed, and timely blog post summarizing the immediate impact of the following recent news items. Anchor the advice to the core principle: "Stop being the 'rescuer' in your own business. Let the systems do the work for you."
 
-    **Length Constraint:**
-    - Aim for **2000 words** minimum, but **do not stop mid-sentence or mid-section** if the content requires more detail.
-    - The absolute maximum token limit is **10000**. **Do not use any token count other than 5000** as a hard cap.
-
     **Sources:**
     {sources}
 
@@ -215,11 +211,22 @@ def generate_detailed_article(articles: List[Dict]) -> str:
     - Format: Clean HTML only (h2, p, ul, li, strong).
     """
 
+    # We turn off blocks for "Harmful" content because we are reporting on 
+    # business risks (scams/compliance) educationally.
+    safety_settings = [
+        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    ]
+
     try:
         model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(
             prompt,
-            generation_config={"max_output_tokens": 3000}
+            # INCREASED TO 8192 (Max for Flash)
+            generation_config={"max_output_tokens": 8192}, 
+            safety_settings=safety_settings
         )
         return response.text.strip()
     except Exception as e:
@@ -256,11 +263,22 @@ def generate_synthetic_article(full_kb: List[Dict]) -> str:
     -   Compliance: Ensure content is easily scannable and digestible.
     """
 
+    # We turn off blocks for "Harmful" content because we are reporting on 
+    # business risks (scams/compliance) educationally.
+    safety_settings = [
+        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    ]
+
     try:
         model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(
             prompt,
-            generation_config={"max_output_tokens": 3000}
+            # INCREASED TO 8192 (Max for Flash)
+            generation_config={"max_output_tokens": 8192}, 
+            safety_settings=safety_settings
         )
         return response.text.strip()
     except Exception as e:
@@ -341,7 +359,7 @@ def upload_to_website(html_path: Path, image_path: Path, meta: Dict):
 
         # 3. Send Request
         logging.info(f"Uploading to {UPLOAD_URL}...")
-        response = requests.post(UPLOAD_URL, headers=headers, files=files)
+        response = requests.post(UPLOAD_URL, headers=headers, files=files, timeout=90)
         
         if response.status_code == 200:
             logging.info(f"Success! Server responded: {response.text}")
@@ -422,6 +440,7 @@ def main():
         save_knowledge_base(full_kb)
         
         # 2. Decide Content Strategy
+        html_content = ""
         if not full_kb:
             msg = "Knowledge base is empty. Cannot generate content."
             logging.info(msg)
@@ -436,6 +455,7 @@ def main():
         
         if not html_content:
             raise Exception("Content generation returned empty content or failed.")
+        html_content = append_stability_blueprint(html_content)
             
         # 3. Process Metadata & Save Locally
         title = extract_title(html_content)
